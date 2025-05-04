@@ -23,7 +23,7 @@ const Videos: Video[] = [
   { id: 3, artist: 'Kid Rock - All Summer Long', link: 'youtube/uwIGZLjugKA' },
 ];
 
-const remote = new MediaRemoteControl();
+//const remote = new MediaRemoteControl();
 
 @Component({
     selector: 'app-root',
@@ -86,6 +86,8 @@ export class AppComponent {
     this.currentVideoId = id;
     this.videoSource = Videos[this.currentVideoId - 1].link;
     this.media.nativeElement.play();
+    //const player = document.querySelector('media-player')!;
+    //player.play();
   }
 
 }
