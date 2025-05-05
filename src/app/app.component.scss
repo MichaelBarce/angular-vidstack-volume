@@ -2,6 +2,10 @@ section {
   display: table;
 }
 
+media-player {
+  aspect-ratio: 16 / 9;
+}
+
 .example-label {
   display: table-cell;
   font-size: 14px;

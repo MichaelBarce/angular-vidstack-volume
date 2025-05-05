@@ -1,33 +1,48 @@
+
+<!-- If we set the storage-key, it will hold the volume setting,
+but then we can't change the video using the current methods. -->
+<!-- storage="storage-key" -->
+
 <media-player
-    autoplay="true"
-    (pause)="onPause($event)"
-    (play)="onPlay($event)"
-    (started)="onStarted($event)"
-    (end)="onEnd($event)"
-    (ended)="onEnded($event)"
-    [src]="videoSource">
-  <media-provider></media-provider>
-  <media-video-layout>
-  </media-video-layout>
+  playsinline="true"
+  load="eager"
+  poster-load="eager"
+  stream-type="on-demand"
+  autoplay="true"
+  (pause)="onPause($event)"
+  (play)="onPlay($event)"
+  (started)="onStarted($event)"
+  (end)="onEnd($event)"
+  (ended)="onEnded($event)"
+  [src]="videoSource"
+>
+  <media-provider>
+    <media-poster
+      class="vds-poster"
+      src="assets/sokratikdiskorse.webp"
+      alt="Sokratik Diskorse Logo"
+    ></media-poster>
+  </media-provider>
+  <media-video-layout> aspect-ratio="16:9" </media-video-layout>
 </media-player>
 
 <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
-    <ng-container matColumnDef="id">
-      <th mat-header-cell *matHeaderCellDef> Id </th>
-      <td mat-cell *matCellDef="let element"> {{element.id}} </td>
-    </ng-container>
-    <ng-container matColumnDef="artist">
-      <th mat-header-cell *matHeaderCellDef> Artist </th>
-      <td mat-cell *matCellDef="let element"> {{element.artist}} </td>
-    </ng-container>
-    <ng-container matColumnDef="value">
-      <th mat-header-cell *matHeaderCellDef> Link </th>
-      <td mat-cell *matCellDef="let element"> {{element.link}} </td>
-    </ng-container>
-    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-    <tr mat-row
-      (click)="playSelectedVideo(row)"
-      *matRowDef="let row; columns: displayedColumns;">
-    </tr>
+  <ng-container matColumnDef="id">
+    <th mat-header-cell *matHeaderCellDef>Id</th>
+    <td mat-cell *matCellDef="let element">{{ element.id }}</td>
+  </ng-container>
+  <ng-container matColumnDef="artist">
+    <th mat-header-cell *matHeaderCellDef>Artist</th>
+    <td mat-cell *matCellDef="let element">{{ element.artist }}</td>
+  </ng-container>
+  <ng-container matColumnDef="value">
+    <th mat-header-cell *matHeaderCellDef>Link</th>
+    <td mat-cell *matCellDef="let element">{{ element.link }}</td>
+  </ng-container>
+  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+  <tr
+    mat-row
+    (click)="playSelectedVideo(row)"
+    *matRowDef="let row; columns: displayedColumns"
+  ></tr>
 </table>
-

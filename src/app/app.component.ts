@@ -8,8 +8,10 @@ import { MediaPlayEvent, MediaPauseEvent, } from 'vidstack';
 import { MediaRemoteControl } from 'vidstack';
 import { MediaEvents } from 'vidstack';
 import { MediaStore, MediaPlayer, MediaContext, MediaAudioGainChangeEvent } from 'vidstack';
-import {MatTableModule} from '@angular/material/table';
-import {MatButtonModule} from '@angular/material/button';
+import { MatTableModule } from '@angular/material/table';
+import { MatButtonModule } from '@angular/material/button';
+import { MediaStorage } from 'vidstack';
+
 
 export interface Video {
   id: number;
@@ -43,10 +45,11 @@ export class AppComponent {
 
   @ViewChild('media') media!: ElementRef;
 
+
   ngOnInit() {
     console.log('ngOnInit');
     this.currentVideoId = 1;
-    this.playVideo(this.currentVideoId);
+    //this.playVideo(this.currentVideoId);
   }
 
   onPause(event: MediaPlayEvent) {
@@ -86,8 +89,8 @@ export class AppComponent {
     this.currentVideoId = id;
     this.videoSource = Videos[this.currentVideoId - 1].link;
     this.media.nativeElement.play();
-    //const player = document.querySelector('media-player')!;
-    //player.play();
+    // const player = document.querySelector('media-player')!;
+    // player.play();
   }
 
 }
