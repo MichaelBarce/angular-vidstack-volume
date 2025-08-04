@@ -1,96 +1,162 @@
-import { Component, ElementRef, CUSTOM_ELEMENTS_SCHEMA, ViewChild } from '@angular/core';
-import 'vidstack/player/styles/default/theme.css';
-import 'vidstack/player/styles/default/layouts/video.css';
-import 'vidstack/player';
-import 'vidstack/player/layouts/default';
-import 'vidstack/player/ui';
-import { MediaPlayEvent, MediaPauseEvent, } from 'vidstack';
-import { MediaRemoteControl } from 'vidstack';
-import { MediaEvents } from 'vidstack';
-import { MediaStore, MediaPlayer, MediaContext, MediaAudioGainChangeEvent } from 'vidstack';
-import { MatTableModule } from '@angular/material/table';
-import { MatButtonModule } from '@angular/material/button';
-import { MediaStorage } from 'vidstack';
-
-
-export interface Video {
-  id: number;
-  artist: string;
-  link: string;
-}
-
-const Videos: Video[] = [
-  { id: 1, artist: 'Collective Soul - December', link: 'youtube/6exsatE-DUk' },
-  { id: 2, artist: 'Eminem - Not Afraid', link: 'youtube/j5-yKhDd64s' },
-  { id: 3, artist: 'Kid Rock - All Summer Long', link: 'youtube/uwIGZLjugKA' },
-];
-
-//const remote = new MediaRemoteControl();
+import { Component, ElementRef, HostListener, CUSTOM_ELEMENTS_SCHEMA, ViewChild, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
+import { MediaPlayEvent, MediaPauseEvent } from 'vidstack';
+import { ResizeState } from './resizeState';
+import { ResizeService } from './resize.service';
+import { VideosService } from './videos.service';
+import { VideoPlayerComponent } from './video-player/video-player.component';
+import { UserVideo } from './user-video';
+import { VideoListComponent } from './video-list/video-list.component';
 
 @Component({
-    selector: 'app-root',
-    standalone: true,
-    imports: [MatTableModule, MatButtonModule],
-    schemas: [CUSTOM_ELEMENTS_SCHEMA],
-    templateUrl: './app.component.html',
-    styleUrl: './app.component.scss'
+  selector: 'app-root',
+  standalone: true,
+  imports: [VideoListComponent, VideoPlayerComponent],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  templateUrl: './app.component.html',
+  styleUrl: './app.component.scss',
 })
 
-export class AppComponent {
+export class AppComponent implements OnInit {
+
+  @ViewChild('player') player!: VideoPlayerComponent;
+
+  public windowWidth: any;
+  public windowHeight: any;
+  public border: any = 25;
+
+  public playerTop: any = 0;
+  public playerLeft: any = 0;
+  public playerWidth: any = 0;
+  public playerHeight: any = 0;
+
+  public listTop: any = 0;
+  public listLeft: any = 0;
+  public listWidth: any = 0;
+  public listHeight: any = 0;
+
+  public windowAspectRatio: any;
+  public maxWidth: any = 800;
+
+  public resizeState = new ResizeState();
+  videos: UserVideo[] = [];
+
+
+  // Component state
   title = 'angular-vidstack-volume';
-  displayedColumns: string[] = ['id', 'artist', 'value'];
-  dataSource = Videos;
-  currentVideoId: number = 1;
+  displayedColumns: string[] = ['id', 'title', 'value'];
+  currentVideoId = 1;
   videoSource: string | null = '';
 
-  @ViewChild('media') media!: ElementRef;
+  currentVideo: UserVideo = {
+    id: 0,
+    title: "",
+    link: "",
+  };
 
-
-  ngOnInit() {
-    console.log('ngOnInit');
-    this.currentVideoId = 1;
-    //this.playVideo(this.currentVideoId);
+  constructor(
+    private videosService: VideosService,
+    private resizeService: ResizeService)
+    {
+    console.log("constructor");
+    this.resizeWindow();
   }
 
-  onPause(event: MediaPlayEvent) {
-    console.log('Media paused');
+  ngOnInit(): void {
+    console.log('ngOnInit()');
+
+    this.videosService.share_videos$.subscribe((data: any) => {
+      this.videos = data;
+      console.log("this.share_videos$");
+      console.log(data);
+    })
+
+    this.videosService.share_currentVideo.subscribe((data: any) => {
+      this.currentVideo = data;
+      console.log("dashboard.component :: ngOnInit :: share_currentVideo");
+      console.log("this.currentVideo.link");
+      console.log(this.currentVideo.link);
+      this.player.play(this.currentVideo.link);
+    })
+
+    this.resizeWindow();
   }
 
-  onStarted(event: MediaPlayEvent) {
-    console.log('Media started');
-  }
+  onplayerEnd(event: any) {
+    console.log("onplayerEnd");
+    console.log("event: " + event);
 
-  onEnded(event: MediaPlayEvent) {
-    console.log('Media ended');
-    if (this.currentVideoId < Videos.length) {
-      this.currentVideoId++;
-      this.playVideo(this.currentVideoId);
+    console.log("this.currentVideo");
+    console.log(this.currentVideo);
+    console.log("this.userVideos");
+    console.log(this.videos);
+
+    var nextVideoIndex: number = 0;
+
+    //the video id begins with 1... but the indexes are 0 based.
+    if (this.currentVideo.id >= this.videos.length) {
+      nextVideoIndex = 1;
     } else {
-      this.currentVideoId = 1;
-      this.playVideo(this.currentVideoId);
+      nextVideoIndex = this.currentVideo.id + 1;
     }
+    //subtract 1 when referencing an array index
+    var nextVideo = this.videos[nextVideoIndex - 1];
+    this.videosService.setCurrentVideo(nextVideo);
   }
 
-  onEnd(event: MediaPlayEvent) {
-    console.log('Media end');
+  // Event handlers
+  onReady(event: any) {
+    console.log("event: " + event);
   }
 
-  onPlay(event: MediaPauseEvent) {
-    console.log('Media played');
+  onPause(event: MediaPlayEvent): void {
+    console.log('onPause');
   }
 
-  playSelectedVideo(Video: Video){
-    console.log('Video: ', Video);
-    this.playVideo(Video.id);
+  onPlay(event: MediaPauseEvent): void {
+    console.log('onPlay');
   }
 
-  playVideo(id: number) {
-    console.log('playVideo: ', id);
-    this.currentVideoId = id;
-    this.videoSource = Videos[this.currentVideoId - 1].link;
-    this.media.nativeElement.play();
-    // const player = document.querySelector('media-player')!;
-    // player.play();
+  onStarted(event: MediaPlayEvent): void {
+    console.log('onStarted');
+  }
+
+  @HostListener('window:resize', ['$event'])
+  resizeWindow() {
+    console.log("resize Window");
+
+    this.windowWidth = window.innerWidth;
+    this.windowHeight = window.innerHeight;
+
+    if (window.innerWidth > this.maxWidth) {
+      this.windowWidth = this.maxWidth;
+    }
+    else {
+      this.windowWidth = window.innerWidth;
+    }
+
+    this.playerTop = this.border;
+    this.playerLeft = this.border;
+    this.playerWidth = (this.windowWidth - (this.border * 2));
+    this.playerHeight = ((this.windowWidth - (this.border * 3)) * 9 / 16);
+
+
+    this.listTop = this.playerHeight + (this.border * 2);
+    this.listLeft = this.border;
+    this.listWidth = this.playerWidth
+    this.listHeight = (window.innerHeight - this.border * 3) - this.playerHeight;
+
+    this.resizeState.playerTop = this.playerTop;
+    this.resizeState.playerLeft = this.playerLeft;
+    this.resizeState.playerWidth = this.playerWidth;
+    this.resizeState.playerHeight = this.playerHeight;
+
+    this.resizeState.listTop = this.listTop;
+    this.resizeState.listLeft = this.listLeft;
+    this.resizeState.listHeight = this.listHeight;
+    this.resizeState.listWidth = this.listWidth;
+
+    this.resizeService.setResizeState(this.resizeState)
+
   }
 
 }

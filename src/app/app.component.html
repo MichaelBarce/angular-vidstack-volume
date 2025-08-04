@@ -1,48 +1,19 @@
-
-<!-- If we set the storage-key, it will hold the volume setting,
-but then we can't change the video using the current methods. -->
-<!-- storage="storage-key" -->
-
-<media-player
-  playsinline="true"
-  load="eager"
-  poster-load="eager"
-  stream-type="on-demand"
-  autoplay="true"
-  (pause)="onPause($event)"
-  (play)="onPlay($event)"
-  (started)="onStarted($event)"
-  (end)="onEnd($event)"
-  (ended)="onEnded($event)"
-  [src]="videoSource"
->
-  <media-provider>
-    <media-poster
-      class="vds-poster"
-      src="assets/sokratikdiskorse.webp"
-      alt="Sokratik Diskorse Logo"
-    ></media-poster>
-  </media-provider>
-  <media-video-layout> aspect-ratio="16:9" </media-video-layout>
-</media-player>
-
-<table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
-  <ng-container matColumnDef="id">
-    <th mat-header-cell *matHeaderCellDef>Id</th>
-    <td mat-cell *matCellDef="let element">{{ element.id }}</td>
-  </ng-container>
-  <ng-container matColumnDef="artist">
-    <th mat-header-cell *matHeaderCellDef>Artist</th>
-    <td mat-cell *matCellDef="let element">{{ element.artist }}</td>
-  </ng-container>
-  <ng-container matColumnDef="value">
-    <th mat-header-cell *matHeaderCellDef>Link</th>
-    <td mat-cell *matCellDef="let element">{{ element.link }}</td>
-  </ng-container>
-  <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-  <tr
-    mat-row
-    (click)="playSelectedVideo(row)"
-    *matRowDef="let row; columns: displayedColumns"
-  ></tr>
-</table>
+<div
+  [style.top.px]="playerTop"
+  [style.left.px]="playerLeft"
+  [style.width.px]="playerWidth"
+  [style.height.px]="playerHeight"
+  style="position:absolute;">
+  <app-video-player
+    (onPlayerEnd)="onplayerEnd($event)"
+    #player>
+  </app-video-player>
+</div>
+<div
+  [style.top.px]="listTop"
+  [style.left.px]="listLeft"
+  [style.width.px]="listWidth"
+  [style.height.px]="listHeight"
+  style="position:absolute;">
+  <app-video-list></app-video-list>
+</div>
