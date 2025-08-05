@@ -3,10 +3,12 @@
   [style.left.px]="playerLeft"
   [style.width.px]="playerWidth"
   [style.height.px]="playerHeight"
-  style="position:absolute;">
+  style="position: absolute"
+>
   <app-video-player
     (onPlayerEnd)="onplayerEnd($event)"
-    #player>
+    #player
+  >
   </app-video-player>
 </div>
 <div
@@ -14,6 +16,7 @@
   [style.left.px]="listLeft"
   [style.width.px]="listWidth"
   [style.height.px]="listHeight"
-  style="position:absolute;">
+  style="position: absolute"
+>
   <app-video-list></app-video-list>
 </div>

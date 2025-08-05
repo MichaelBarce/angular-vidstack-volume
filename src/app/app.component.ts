@@ -6,11 +6,12 @@ import { VideosService } from './videos.service';
 import { VideoPlayerComponent } from './video-player/video-player.component';
 import { UserVideo } from './user-video';
 import { VideoListComponent } from './video-list/video-list.component';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [VideoListComponent, VideoPlayerComponent],
+  imports: [VideoListComponent, VideoPlayerComponent, ButtonModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
@@ -75,7 +76,7 @@ export class AppComponent implements OnInit {
       console.log("dashboard.component :: ngOnInit :: share_currentVideo");
       console.log("this.currentVideo.link");
       console.log(this.currentVideo.link);
-      this.player.play(this.currentVideo.link);
+      //this.player.play(this.currentVideo.link);
     })
 
     this.resizeWindow();
