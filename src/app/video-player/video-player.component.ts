@@ -24,6 +24,7 @@ export class VideoPlayerComponent {
   player: any;
   initialVolume = 1;
   lastVolume = -1;
+  isVideoEnded = false;
   
   constructor(private videosService: VideosService) {}
 
@@ -67,6 +68,7 @@ ngAfterViewInit() {
 
   player.addEventListener('ended', () => {
     console.log('ended')
+    this.isVideoEnded = true;
     const data = { src: player.src, id: this.currentVideo.id };
     this.onPlayerEnd.emit(data);
   });
@@ -79,6 +81,7 @@ play(video: string) {
   
   const tryPlay = () => {
     setTimeout(() => {
+      this.isVideoEnded = false;
       this.player.volume = currentVolume;
       this.player
         .play()

@@ -151,3 +151,10 @@ media-player[data-preview] media-captions {
   z-index: 1;
   background-color: black;
 }
+
+.endscreen {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  background: rgb(24, 24, 24);
+}

@@ -73,7 +73,7 @@ export class AppComponent implements OnInit {
     const currentIndex = videos.findIndex(v => v.link === event.src);
     const nextIndex = currentIndex >= videos.length ? 0 : currentIndex;
     const nextVideo = videos[nextIndex];
-    videos[currentIndex -1].isPlaying = videos[currentIndex -1].isPlaying ?? false ;
+    if(videos[currentIndex -1].isPlaying) videos[currentIndex -1].isPlaying = videos[currentIndex -1].isPlaying ?? false ;
     videos[nextIndex].isPlaying = true;
 
     this.videosService.currentVideoSignal.set(nextVideo);
@@ -88,7 +88,7 @@ export class AppComponent implements OnInit {
     const currentIndex = videos.findIndex(v => v.link === event.src);
     const nextIndex = currentIndex + 1 >= videos.length ? 0 : currentIndex + 1;
     const nextVideo = videos[nextIndex];
-    videos[currentIndex].isPlaying = false;
+    if(videos[currentIndex]) videos[currentIndex].isPlaying = false;
     videos[nextIndex].isPlaying = true;
     this.videosService.currentVideoSignal.set(nextVideo);
 
