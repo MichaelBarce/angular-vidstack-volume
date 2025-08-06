@@ -15,12 +15,10 @@ export class ResizeService {
   constructor() { }
 
   setResizeState(data: ResizeState) {
-    console.log("setResizeState");
     this.resizeState.next(data);
   }
 
   getResizeState(): any {
-    console.log("getResizeState");
     return this.resizeState;
   }
 

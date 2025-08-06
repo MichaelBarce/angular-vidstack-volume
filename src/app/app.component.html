@@ -1,22 +1,24 @@
-<div
-  [style.top.px]="playerTop"
-  [style.left.px]="playerLeft"
-  [style.width.px]="playerWidth"
-  [style.height.px]="playerHeight"
-  style="position: absolute"
->
-  <app-video-player
-    (onPlayerEnd)="onplayerEnd($event)"
-    #player
+<div class="app-container">
+  <div
+    [style.top.px]="playerTop"
+    [style.left.px]="playerLeft"
+    [style.width.px]="playerWidth"
+    [style.height.px]="playerHeight"
   >
-  </app-video-player>
+    <app-video-player
+      (onPlayerEnd)="onplayerEnd($event)"
+      #player
+    >
+    </app-video-player>
+  </div>
+  <div
+    [style.top.px]="listTop"
+    [style.left.px]="listLeft"
+    [style.width.px]="listWidth"
+    [style.height.px]="listHeight"
+    
+  >
+    <app-video-list (onSelectVideo)="onPlayerListClick($event)"></app-video-list>
+  </div>
 </div>
-<div
-  [style.top.px]="listTop"
-  [style.left.px]="listLeft"
-  [style.width.px]="listWidth"
-  [style.height.px]="listHeight"
-  style="position: absolute"
->
-  <app-video-list></app-video-list>
-</div>
+

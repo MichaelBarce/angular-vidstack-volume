@@ -1,10 +1,10 @@
 import { CommonModule } from '@angular/common';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, ElementRef, EventEmitter, Output, ViewChild, computed } from '@angular/core';
 import { VideosService } from '../videos.service';
-import { CUSTOM_ELEMENTS_SCHEMA, Component, ElementRef, EventEmitter, Output, ViewChild } from '@angular/core';
+import { UserVideo } from '../user-video';
 import 'vidstack/player';
 import 'vidstack/player/ui';
 import 'vidstack/player/layouts/plyr';
-import { UserVideo } from '../user-video';
 
 @Component({
   selector: 'app-video-player',
@@ -14,55 +14,82 @@ import { UserVideo } from '../user-video';
   templateUrl: './video-player.component.html',
   styleUrl: './video-player.component.scss'
 })
-
 export class VideoPlayerComponent {
-
   @Output() onPlayerEnd = new EventEmitter<any>();
+  @ViewChild('mediaPlayer', { static: false }) mediaPlayerRef!: ElementRef;
+  @ViewChild('volumeSlider', { static: false }) volumeSliderRef!: ElementRef;
 
-  public videoId: string = "youtube/qDuKsiwS5xw";
+  currentVideo: UserVideo = { id: 0, title: '', link: '', isPlaying: false };
+  videos = computed(() => this.videosService.videosSignal());
+  player: any;
+  initialVolume = 1;
+  lastVolume = -1;
+  
+  constructor(private videosService: VideosService) {}
 
-  currentVideo: UserVideo = {
-    id: 0,
-    title: "",
-    link: "",
+ngAfterViewInit() {
+  const player = this.mediaPlayerRef.nativeElement;
+  this.player = player;
+
+  const storedVolume = parseFloat(localStorage.getItem('volume') || '1');
+  this.initialVolume = isNaN(storedVolume) ? 1 : storedVolume;
+  this.lastVolume = this.initialVolume;
+
+  setTimeout(() => {
+    if(this.videos().length > 0) {
+      this.videos()[0].isPlaying = true;
+    }
+  })
+
+  this.currentVideo = this.videos()[0]; 
+
+  player.addEventListener('can-play', () => {
+    setTimeout(() => {
+      player.dispatchEvent(
+        new CustomEvent('media-volume-change-request', { detail: this.initialVolume })
+      );
+    }, 300);
+
+    const firstVideo = this.videos()[0];
+    if (firstVideo) {
+      this.currentVideo = firstVideo;
+      this.play(firstVideo.link);
+    }
+  }, { once: true });
+
+  const slider = this.volumeSliderRef.nativeElement;
+  slider.addEventListener('value-change', (event: CustomEvent) => {
+    let percent = event.detail;
+    let decimal = parseFloat((percent / 100).toFixed(2));
+    
+    localStorage.setItem('volume', decimal.toString());
+  });
+
+  player.addEventListener('ended', () => {
+    console.log('ended')
+    const data = { src: player.src, id: this.currentVideo.id };
+    this.onPlayerEnd.emit(data);
+  });
+}
+
+
+play(video: string) {
+  this.player.setAttribute('src', video);
+  const currentVolume = parseFloat(localStorage.getItem('volume') || '1');
+  
+  const tryPlay = () => {
+    setTimeout(() => {
+      this.player.volume = currentVolume;
+      this.player
+        .play()
+        .catch((err: any) => console.error('🚫 Autoplay blocked:', err));
+    });
   };
 
-  constructor(private videosService: VideosService) {
-    console.log("constructor: VideoPlayerComponent");
+  if (this.player.readyState >= 3) {
+    tryPlay();
+  } else {
+    this.player.addEventListener('can-play', tryPlay, { once: true });
   }
-
-  ngOnInit() {
-
-    const player = document.querySelector('media-player')!;
-
-    this.videosService.share_currentVideo.subscribe((data: any) => {
-      this.currentVideo = data;
-      console.log("dashboard.component :: ngOnInit :: share_currentVideo");
-      console.log("this.currentVideo.link");
-      console.log(this.currentVideo.link);
-      this.play(this.currentVideo.link);
-    })
-
-    player.addEventListener('play', () => {
-      console.log('Video started playing');
-    });
-
-    player.addEventListener('pause', () => {
-      console.log('Video is paused');
-    });
-
-    player.addEventListener('ended', () => {
-      console.log('Video ended');
-      const data = player.src;
-      this.onPlayerEnd.emit(data);
-    });
-
-  }
-
-  play(video: string) {
-    const player = document.querySelector('media-player')!;
-    player.src=video;
-    player.play();
-  }
-
+}
 }

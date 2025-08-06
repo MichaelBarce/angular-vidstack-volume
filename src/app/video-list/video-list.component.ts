@@ -1,4 +1,4 @@
-import { Component, Input, Output, OnInit, EventEmitter, ViewChild, ElementRef } from '@angular/core';
+import { Component, Input, Output, OnInit, EventEmitter, ViewChild, ElementRef, computed } from '@angular/core';
 import { ResizeService } from '../resize.service'
 import { UserVideo } from '../user-video';
 import { VideosService } from '../videos.service';
@@ -17,35 +17,23 @@ import { MatTableModule } from '@angular/material/table';
 export class VideoListComponent implements OnInit {
 
   @Input() videos: UserVideo[] = [];
+  @Output() onSelectVideo = new EventEmitter<any>();
   @ViewChild('userVideoFilter', { read: ElementRef }) userVideoFilter: ElementRef | undefined;
 
   currentVideo?: UserVideo;
   public resizeState: ResizeState | undefined;
-  public userVideos: UserVideo[] = [];
+  videosSignal = computed(() => this.videosService.videosSignal());
   displayedColumns: string[] = ['id', 'title', 'link'];
 
   constructor(
     private videosService: VideosService,
-    private resizeService: ResizeService
-  ) {
-    console.log("video-list constructor");
-  }
+  ) { }
 
-  ngOnInit(): void {
-
-    this.videosService.share_videos$.subscribe((data: any) => {
-      this.userVideos = data;
-      console.log("dashboardComponent.share_currentUserVideoTag$");
-      console.log("this.userVideos");
-      console.log(this.userVideos);
-    })
-
-  }
+  ngOnInit(): void { }
 
   onRowSelectMyVideos(video: UserVideo) {
-    console.log(video);
-    this.currentVideo = video;
-    this.videosService.setCurrentVideo(this.currentVideo);
+    const data = { src: video.link, id: video.id };
+    this.onSelectVideo.emit(data);
   }
 
 }

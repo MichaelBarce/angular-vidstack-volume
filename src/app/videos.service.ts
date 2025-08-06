@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { BehaviorSubject, throwError } from 'rxjs';
 import { UserVideo } from '../app/user-video';
@@ -11,31 +11,20 @@ export class VideosService {
   private currentVideo: UserVideo | null = null;
 
   videos: UserVideo[] = [];
-
-  public bs_videos$ = new BehaviorSubject<UserVideo[]>(this.videos);
-  public share_videos$ = this.bs_videos$.asObservable();
-  public bs_currentVideo$ = new BehaviorSubject<UserVideo | null>(this.currentVideo);
-  public share_currentVideo = this.bs_currentVideo$.asObservable();
+  videosSignal = signal<UserVideo[]>([]);
+  currentVideoSignal = signal<UserVideo | null>(null);
 
   constructor(private http: HttpClient) {
-    console.log("VideosService constructor");
     this.fetchVideos();
   }
 
-
   fetchVideos() {
-    console.log('fetchVideos');
     this.http.get<UserVideo[]>('assets/videos.json')
       .subscribe(data => {
         this.videos = data;
-        this.bs_videos$.next(this.videos);
+        this.currentVideoSignal.set(data[0]);
+        this.videosSignal.set(data);
       });
-  }
-
-  setCurrentVideo(video: any) {
-    console.log(video);
-    this.bs_currentVideo$.next(video);
-    this.currentVideo = video;
   }
 
   private handleError(error: HttpErrorResponse) {

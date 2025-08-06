@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, CUSTOM_ELEMENTS_SCHEMA, ViewChild, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, ElementRef, HostListener, CUSTOM_ELEMENTS_SCHEMA, ViewChild, OnInit, AfterViewInit, OnDestroy, computed, signal } from '@angular/core';
 import { MediaPlayEvent, MediaPauseEvent } from 'vidstack';
 import { ResizeState } from './resizeState';
 import { ResizeService } from './resize.service';
@@ -23,7 +23,7 @@ export class AppComponent implements OnInit {
 
   public windowWidth: any;
   public windowHeight: any;
-  public border: any = 25;
+  public border: any = 5;
 
   public playerTop: any = 0;
   public playerLeft: any = 0;
@@ -36,11 +36,11 @@ export class AppComponent implements OnInit {
   public listHeight: any = 0;
 
   public windowAspectRatio: any;
-  public maxWidth: any = 800;
+  public maxWidth: any = 1200;
 
   public resizeState = new ResizeState();
-  videos: UserVideo[] = [];
-
+  videos = computed(() => this.videosService.videosSignal());
+  currentVideoSignal = computed(() => this.videos()[0]);
 
   // Component state
   title = 'angular-vidstack-volume';
@@ -52,59 +52,51 @@ export class AppComponent implements OnInit {
     id: 0,
     title: "",
     link: "",
+    isPlaying: false
   };
+
+
 
   constructor(
     private videosService: VideosService,
     private resizeService: ResizeService)
-    {
-    console.log("constructor");
+  {
     this.resizeWindow();
   }
 
   ngOnInit(): void {
-    console.log('ngOnInit()');
-
-    this.videosService.share_videos$.subscribe((data: any) => {
-      this.videos = data;
-      console.log("this.share_videos$");
-      console.log(data);
-    })
-
-    this.videosService.share_currentVideo.subscribe((data: any) => {
-      this.currentVideo = data;
-      console.log("dashboard.component :: ngOnInit :: share_currentVideo");
-      console.log("this.currentVideo.link");
-      console.log(this.currentVideo.link);
-      //this.player.play(this.currentVideo.link);
-    })
-
     this.resizeWindow();
   }
 
-  onplayerEnd(event: any) {
-    console.log("onplayerEnd");
-    console.log("event: " + event);
+  onPlayerListClick(event: any) {
+    const videos = this.videos();
+    const currentIndex = videos.findIndex(v => v.link === event.src);
+    const nextIndex = currentIndex >= videos.length ? 0 : currentIndex;
+    const nextVideo = videos[nextIndex];
+    videos[currentIndex -1].isPlaying = videos[currentIndex -1].isPlaying ?? false ;
+    videos[nextIndex].isPlaying = true;
 
-    console.log("this.currentVideo");
-    console.log(this.currentVideo);
-    console.log("this.userVideos");
-    console.log(this.videos);
+    this.videosService.currentVideoSignal.set(nextVideo);
 
-    var nextVideoIndex: number = 0;
-
-    //the video id begins with 1... but the indexes are 0 based.
-    if (this.currentVideo.id >= this.videos.length) {
-      nextVideoIndex = 1;
-    } else {
-      nextVideoIndex = this.currentVideo.id + 1;
-    }
-    //subtract 1 when referencing an array index
-    var nextVideo = this.videos[nextVideoIndex - 1];
-    this.videosService.setCurrentVideo(nextVideo);
+    setTimeout(() => {
+      this.player.play(nextVideo.link);
+    }, 300); 
   }
 
-  // Event handlers
+  onplayerEnd(event: any) {
+    const videos = this.videos();
+    const currentIndex = videos.findIndex(v => v.link === event.src);
+    const nextIndex = currentIndex + 1 >= videos.length ? 0 : currentIndex + 1;
+    const nextVideo = videos[nextIndex];
+    videos[currentIndex].isPlaying = false;
+    videos[nextIndex].isPlaying = true;
+    this.videosService.currentVideoSignal.set(nextVideo);
+
+    setTimeout(() => {
+      this.player.play(nextVideo.link);
+    }, 300); 
+  }
+  
   onReady(event: any) {
     console.log("event: " + event);
   }
@@ -123,8 +115,6 @@ export class AppComponent implements OnInit {
 
   @HostListener('window:resize', ['$event'])
   resizeWindow() {
-    console.log("resize Window");
-
     this.windowWidth = window.innerWidth;
     this.windowHeight = window.innerHeight;
 
@@ -137,7 +127,7 @@ export class AppComponent implements OnInit {
 
     this.playerTop = this.border;
     this.playerLeft = this.border;
-    this.playerWidth = (this.windowWidth - (this.border * 2));
+    this.playerWidth = (this.windowWidth - (this.border * 3));
     this.playerHeight = ((this.windowWidth - (this.border * 3)) * 9 / 16);
 
 
